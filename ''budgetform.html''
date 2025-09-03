@@ -1,0 +1,170 @@
+
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { motion } from "framer-motion";
+
+export default function BudgetForm({ entry, tasks, onSubmit, onCancel }) {
+  const [currentEntry, setCurrentEntry] = React.useState(entry || {
+    title: "",
+    amount: 0,
+    category: "personal",
+    type: "expense",
+    date: new Date().toISOString().split('T')[0],
+    description: "",
+    related_task_id: ""
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(currentEntry);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-8 border border-white/20"
+    >
+      <h3 className="text-xl font-semibold mb-6">
+        {entry ? 'Edit Budget Entry' : 'Add New Budget Entry'}
+      </h3>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              placeholder="Enter title..."
+              value={currentEntry.title}
+              onChange={(e) => setCurrentEntry({...currentEntry, title: e.target.value})}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="amount">Amount (₹)</Label>
+            <Input
+              id="amount"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              value={currentEntry.amount || ""}
+              onChange={(e) => setCurrentEntry({...currentEntry, amount: parseFloat(e.target.value) || 0})}
+            />
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <Label>Type</Label>
+            <Select
+              value={currentEntry.type}
+              onValueChange={(value) => setCurrentEntry({...currentEntry, type: value})}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="income">Income</SelectItem>
+                <SelectItem value="expense">Expense</SelectItem>
+                <SelectItem value="budget_limit">Budget Limit</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Category</Label>
+            <Select
+              value={currentEntry.category}
+              onValueChange={(value) => setCurrentEntry({...currentEntry, category: value})}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="work">Work</SelectItem>
+                <SelectItem value="personal">Personal</SelectItem>
+                <SelectItem value="shopping">Shopping</SelectItem>
+                <SelectItem value="health">Health</SelectItem>
+                <SelectItem value="learning">Learning</SelectItem>
+                <SelectItem value="finance">Finance</SelectItem>
+                <SelectItem value="entertainment">Entertainment</SelectItem>
+                <SelectItem value="transport">Transport</SelectItem>
+                <SelectItem value="food">Food</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {currentEntry.date ? format(new Date(currentEntry.date), 'PPP') : 'Select date'}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={currentEntry.date ? new Date(currentEntry.date) : undefined}
+                  onSelect={(date) => setCurrentEntry({...currentEntry, date: date?.toISOString().split('T')[0]})}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              placeholder="Add details..."
+              value={currentEntry.description}
+              onChange={(e) => setCurrentEntry({...currentEntry, description: e.target.value})}
+              className="h-24"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Related Task (Optional)</Label>
+            <Select
+              value={currentEntry.related_task_id}
+              onValueChange={(value) => setCurrentEntry({...currentEntry, related_task_id: value})}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select task" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={null}>No related task</SelectItem>
+                {tasks.map((task) => (
+                  <SelectItem key={task.id} value={task.id}>
+                    {task.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
+            {entry ? 'Update Entry' : 'Add Entry'}
+          </Button>
+        </div>
+      </form>
+    </motion.div>
+  );
+}

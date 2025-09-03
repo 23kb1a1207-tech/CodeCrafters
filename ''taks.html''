@@ -1,0 +1,112 @@
+
+import React, { useState, useEffect } from "react";
+import { Task } from "@/entities/all";
+import { Button } from "@/components/ui/button";
+import { Plus, CheckSquare } from "lucide-react"; // Changed: Added CheckSquare
+import { AnimatePresence } from "framer-motion";
+
+import TaskForm from "../components/tasks/TaskForm";
+import TaskFilters from "../components/tasks/TaskFilters";
+import TaskItem from "../components/tasks/TaskItem";
+import TaskStats from "../components/tasks/TaskStats";
+
+export default function TasksPage() {
+  const [tasks, setTasks] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [filters, setFilters] = useState({ status: "all", priority: "all", category: "all" });
+
+  useEffect(() => {
+    loadTasks();
+  }, []);
+
+  const loadTasks = async () => {
+    const fetchedTasks = await Task.list("-created_date");
+    setTasks(fetchedTasks);
+  };
+
+  const handleSubmit = async (taskData) => {
+    if (editingTask) {
+      await Task.update(editingTask.id, taskData);
+    } else {
+      await Task.create(taskData);
+    }
+    setShowForm(false);
+    setEditingTask(null);
+    loadTasks();
+  };
+
+  const handleStatusChange = async (task, newStatus) => {
+    await Task.update(task.id, { ...task, status: newStatus });
+    loadTasks();
+  };
+
+  const handleEdit = (task) => {
+    setEditingTask(task);
+    setShowForm(true);
+  };
+
+  const filteredTasks = tasks.filter(task => {
+    const statusMatch = filters.status === "all" || task.status === filters.status;
+    const priorityMatch = filters.priority === "all" || task.priority === filters.priority;
+    const categoryMatch = filters.category === "all" || task.category === filters.category;
+    return statusMatch && priorityMatch && categoryMatch;
+  });
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Tasks</h1>
+            <p className="text-gray-600 mt-1">Manage your tasks with budget tracking</p>
+          </div>
+          <Button 
+            onClick={() => setShowForm(!showForm)}
+            className="bg-indigo-600 hover:bg-indigo-700"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Add New Task
+          </Button>
+        </div>
+
+        <TaskStats tasks={tasks} />
+
+        <AnimatePresence>
+          {showForm && (
+            <TaskForm
+              task={editingTask}
+              onSubmit={handleSubmit}
+              onCancel={() => {
+                setShowForm(false);
+                setEditingTask(null);
+              }}
+            />
+          )}
+        </AnimatePresence>
+
+        <TaskFilters onFilterChange={setFilters} />
+
+        <div className="grid gap-4">
+          <AnimatePresence>
+            {filteredTasks.map((task) => (
+              <TaskItem
+                key={task.id}
+                task={task}
+                onStatusChange={handleStatusChange}
+                onEdit={handleEdit}
+              />
+            ))}
+          </AnimatePresence>
+          {filteredTasks.length === 0 && (
+            <div className="text-center py-12">
+              <CheckSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-700 mb-2">No tasks found</h3>
+              <p className="text-gray-500">Create your first task to get started!</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

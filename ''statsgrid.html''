@@ -1,0 +1,79 @@
+
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle, Clock, DollarSign, PiggyBank, TrendingUp, TrendingDown } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export default function StatsGrid({ stats, isLoading }) {
+  const statCards = [
+    {
+      title: "Total Tasks",
+      value: stats.totalTasks,
+      icon: CheckCircle,
+      color: "bg-blue-500",
+      textColor: "text-blue-600"
+    },
+    {
+      title: "Completed",
+      value: stats.completedTasks,
+      icon: CheckCircle,
+      color: "bg-green-500",
+      textColor: "text-green-600"
+    },
+    {
+      title: "Pending Tasks",
+      value: stats.pendingTasks,
+      icon: Clock,
+      color: "bg-orange-500",
+      textColor: "text-orange-600"
+    },
+    {
+      title: "Total Budget",
+      value: `₹${stats.totalBudget.toFixed(2)}`,
+      icon: PiggyBank,
+      color: "bg-purple-500",
+      textColor: "text-purple-600"
+    },
+    {
+      title: "Total Spent",
+      value: `₹${stats.totalSpent.toFixed(2)}`,
+      icon: TrendingDown,
+      color: "bg-red-500",
+      textColor: "text-red-600"
+    },
+    {
+      title: "Total Income",
+      value: `₹${stats.totalIncome.toFixed(2)}`,
+      icon: TrendingUp,
+      color: "bg-emerald-500",
+      textColor: "text-emerald-600"
+    }
+  ];
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {statCards.map((stat, index) => (
+        <Card key={index} className="relative overflow-hidden bg-white/60 backdrop-blur-sm border border-white/20 shadow-lg">
+          <div className={`absolute top-0 right-0 w-20 h-20 transform translate-x-6 -translate-y-6 ${stat.color} rounded-full opacity-10`} />
+          <CardHeader className="pb-2">
+            <div className="flex justify-between items-start">
+              <CardTitle className="text-sm font-medium text-gray-600">
+                {stat.title}
+              </CardTitle>
+              <div className={`p-2 rounded-lg ${stat.color} bg-opacity-10`}>
+                <stat.icon className={`w-5 h-5 ${stat.textColor}`} />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <Skeleton className="h-8 w-24" />
+            ) : (
+              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+            )}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}

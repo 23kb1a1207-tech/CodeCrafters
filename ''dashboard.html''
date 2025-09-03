@@ -1,0 +1,64 @@
+import React, { useState, useEffect } from "react";
+import { Task, BudgetEntry } from "@/entities/all";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { Plus, TrendingUp, TrendingDown, CheckCircle, Clock, DollarSign, PiggyBank } from "lucide-react";
+
+import StatsGrid from "../components/dashboard/StatsGrid";
+import TasksSummary from "../components/dashboard/TasksSummary";
+import BudgetOverview from "../components/dashboard/BudgetOverview";
+import QuickActions from "../components/dashboard/QuickActions";
+
+export default function Dashboard() {
+  const [tasks, setTasks] = useState([]);
+  const [budgetEntries, setBudgetEntries] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    const [tasksData, budgetData] = await Promise.all([
+      Task.list("-created_date"),
+      BudgetEntry.list("-created_date")
+    ]);
+    setTasks(tasksData);
+    setBudgetEntries(budgetData);
+    setIsLoading(false);
+  };
+
+  const stats = {
+    totalTasks: tasks.length,
+    completedTasks: tasks.filter(t => t.status === "done").length,
+    pendingTasks: tasks.filter(t => t.status !== "done").length,
+    totalBudget: budgetEntries.filter(e => e.type === "budget_limit").reduce((sum, e) => sum + e.amount, 0),
+    totalSpent: budgetEntries.filter(e => e.type === "expense").reduce((sum, e) => sum + e.amount, 0),
+    totalIncome: budgetEntries.filter(e => e.type === "income").reduce((sum, e) => sum + e.amount, 0),
+  };
+
+  return (
+    <div className="p-4 md:p-8 bg-gradient-to-br from-gray-50 to-indigo-50 min-h-screen">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+          <p className="text-gray-600">Overview of your tasks and budget</p>
+        </div>
+
+        <StatsGrid stats={stats} isLoading={isLoading} />
+        
+        <div className="grid lg:grid-cols-3 gap-6 mt-8">
+          <div className="lg:col-span-2 space-y-6">
+            <TasksSummary tasks={tasks} isLoading={isLoading} />
+            <BudgetOverview budgetEntries={budgetEntries} isLoading={isLoading} />
+          </div>
+          
+          <div>
+            <QuickActions />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

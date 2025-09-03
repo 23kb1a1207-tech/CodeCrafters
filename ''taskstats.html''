@@ -1,0 +1,51 @@
+
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { CheckCircle, Clock, ArrowUpCircle, DollarSign } from "lucide-react";
+
+export default function TaskStats({ tasks }) {
+  const stats = {
+    total: tasks.length,
+    completed: tasks.filter(t => t.status === "done").length,
+    inProgress: tasks.filter(t => t.status === "in_progress").length,
+    pending: tasks.filter(t => t.status === "todo").length,
+    totalEstimated: tasks.reduce((sum, t) => sum + (t.estimated_cost || 0), 0),
+    totalActual: tasks.reduce((sum, t) => sum + (t.actual_cost || 0), 0)
+  };
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <Card className="bg-white/80 backdrop-blur-sm border border-white/20">
+        <CardContent className="p-4 text-center">
+          <CheckCircle className="w-8 h-8 text-green-500 mx-auto mb-2" />
+          <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
+          <p className="text-sm text-gray-600">Completed</p>
+        </CardContent>
+      </Card>
+      
+      <Card className="bg-white/80 backdrop-blur-sm border border-white/20">
+        <CardContent className="p-4 text-center">
+          <ArrowUpCircle className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+          <p className="text-2xl font-bold text-blue-600">{stats.inProgress}</p>
+          <p className="text-sm text-gray-600">In Progress</p>
+        </CardContent>
+      </Card>
+      
+      <Card className="bg-white/80 backdrop-blur-sm border border-white/20">
+        <CardContent className="p-4 text-center">
+          <Clock className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+          <p className="text-2xl font-bold text-orange-600">{stats.pending}</p>
+          <p className="text-sm text-gray-600">Pending</p>
+        </CardContent>
+      </Card>
+      
+      <Card className="bg-white/80 backdrop-blur-sm border border-white/20">
+        <CardContent className="p-4 text-center">
+          <DollarSign className="w-8 h-8 text-purple-500 mx-auto mb-2" />
+          <p className="text-lg font-bold text-purple-600">₹{stats.totalActual.toFixed(2)}</p>
+          <p className="text-sm text-gray-600">Total Spent</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

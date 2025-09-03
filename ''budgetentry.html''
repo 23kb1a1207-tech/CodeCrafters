@@ -1,0 +1,66 @@
+{
+  "name": "BudgetEntry",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Title of the budget entry"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount spent or budgeted"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "work",
+        "personal",
+        "shopping",
+        "health",
+        "learning",
+        "finance",
+        "entertainment",
+        "transport",
+        "food"
+      ],
+      "description": "Budget category"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "income",
+        "expense",
+        "budget_limit"
+      ],
+      "description": "Type of budget entry"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the transaction or budget period"
+    },
+    "description": {
+      "type": "string",
+      "description": "Additional details about the entry"
+    },
+    "related_task_id": {
+      "type": "string",
+      "description": "ID of related task if applicable"
+    }
+  },
+  "required": [
+    "title",
+    "amount",
+    "category",
+    "type",
+    "date"
+  ],
+  "rls": {
+    "read": {
+      "created_by": "{{user.email}}"
+    },
+    "write": {
+      "created_by": "{{user.email}}"
+    }
+  }
+}

@@ -1,0 +1,100 @@
+import React, { useState, useEffect } from "react";
+import { BudgetEntry, Task } from "@/entities/all";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { AnimatePresence } from "framer-motion";
+
+import BudgetForm from "../components/budget/BudgetForm";
+import BudgetStats from "../components/budget/BudgetStats";
+import BudgetChart from "../components/budget/BudgetChart";
+import BudgetList from "../components/budget/BudgetList";
+import CategoryLimits from "../components/budget/CategoryLimits";
+
+export default function BudgetPage() {
+  const [budgetEntries, setBudgetEntries] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [activeTab, setActiveTab] = useState("overview");
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    const [budgetData, tasksData] = await Promise.all([
+      BudgetEntry.list("-created_date"),
+      Task.list()
+    ]);
+    setBudgetEntries(budgetData);
+    setTasks(tasksData);
+  };
+
+  const handleSubmit = async (entryData) => {
+    if (editingEntry) {
+      await BudgetEntry.update(editingEntry.id, entryData);
+    } else {
+      await BudgetEntry.create(entryData);
+    }
+    setShowForm(false);
+    setEditingEntry(null);
+    loadData();
+  };
+
+  const handleEdit = (entry) => {
+    setEditingEntry(entry);
+    setShowForm(true);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Budget Manager</h1>
+            <p className="text-gray-600 mt-1">Track your expenses and manage your budget</p>
+          </div>
+          <Button 
+            onClick={() => setShowForm(!showForm)}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Add Entry
+          </Button>
+        </div>
+
+        <BudgetStats budgetEntries={budgetEntries} tasks={tasks} />
+
+        <AnimatePresence>
+          {showForm && (
+            <BudgetForm
+              entry={editingEntry}
+              tasks={tasks}
+              onSubmit={handleSubmit}
+              onCancel={() => {
+                setShowForm(false);
+                setEditingEntry(null);
+              }}
+            />
+          )}
+        </AnimatePresence>
+
+        <div className="grid lg:grid-cols-3 gap-6 mt-8">
+          <div className="lg:col-span-2">
+            <BudgetChart budgetEntries={budgetEntries} />
+            <div className="mt-6">
+              <BudgetList 
+                budgetEntries={budgetEntries} 
+                onEdit={handleEdit}
+              />
+            </div>
+          </div>
+          
+          <div>
+            <CategoryLimits budgetEntries={budgetEntries} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,73 @@
+{
+  "name": "Task",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "The title of the task"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the task"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "todo",
+        "in_progress",
+        "done"
+      ],
+      "default": "todo",
+      "description": "Current status of the task"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium",
+      "description": "Priority level of the task"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "work",
+        "personal",
+        "shopping",
+        "health",
+        "learning",
+        "finance"
+      ],
+      "default": "personal",
+      "description": "Task category"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When the task is due"
+    },
+    "estimated_cost": {
+      "type": "number",
+      "description": "Estimated cost associated with this task",
+      "minimum": 0
+    },
+    "actual_cost": {
+      "type": "number",
+      "description": "Actual cost spent on this task",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "rls": {
+    "read": {
+      "created_by": "{{user.email}}"
+    },
+    "write": {
+      "created_by": "{{user.email}}"
+    }
+  }
+}
